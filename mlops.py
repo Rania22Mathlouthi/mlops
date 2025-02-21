@@ -1,31 +1,36 @@
+"""
+MLOps pipeline for model training, evaluation, and deployment using FastAPI.
+"""
+
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from imblearn.over_sampling import SMOTE
-
 from fastapi import FastAPI
 import joblib
 import mlflow
 
 app = FastAPI()
 
-"""
-MLOps pipeline for model training, evaluation, and deployment with FastAPI.
-This script contains functions to load data, preprocess it, train and evaluate models, 
-and deploy them using joblib and MLflow.
-"""
-
 
 def load_data(file):
-    """Loads a CSV file into a pandas DataFrame."""
+    """
+    Loads a CSV file into a pandas DataFrame.
+
+    Args:
+        file (str): Path to the CSV file.
+
+    Returns:
+        pandas.DataFrame: DataFrame containing the data.
+    """
     return pd.read_csv(file)
 
 
 def process_data(data, target_column):
     """
-    Encodes categorical variables and separates features and target variables.
+    Processes the data by encoding categorical variables and separating features and target.
 
     Args:
         data (pandas.DataFrame): Input data.
@@ -51,13 +56,14 @@ def prepare_data(filepath, target_column, test_size=0.2, random_state=42):
     Args:
         filepath (str): Path to the dataset.
         target_column (str): Name of the target column.
-        test_size (float, optional): Proportion of the data for testing. Default is 0.2.
+        test_size (float, optional): Proportion of test data. Default is 0.2.
         random_state (int, optional): Random seed. Default is 42.
 
     Returns:
-        tuple: Resampled training features, testing features, resampled training target, testing target.
+        tuple: Resampled training features, testing features,
+        resampled training target, testing target.
     """
-    data = pd.read_csv(filepath)
+    data = load_data(filepath)
     x, y = process_data(data, target_column)
 
     x_train, x_test, y_train, y_test = train_test_split(
@@ -76,7 +82,7 @@ def prepare_data(filepath, target_column, test_size=0.2, random_state=42):
 
 def train_model(model, x_train, y_train):
     """
-    Trains the model and logs the parameters using MLflow.
+    Trains the model and logs parameters using MLflow.
 
     Args:
         model: The model to be trained.
@@ -88,13 +94,11 @@ def train_model(model, x_train, y_train):
     """
     with mlflow.start_run():
         mlflow.log_param("model_type", type(model).__name__)
+
         if hasattr(model, "n_estimators"):
             mlflow.log_param("n_estimators", model.n_estimators)
 
         model.fit(x_train, y_train)
-
-        mlflow.log_param("layers", "some_value")  # Replace with actual parameter
-        mlflow.log_param("alpha", "some_value")  # Replace with actual parameter
 
         mlflow.sklearn.log_model(model, "model")
 
@@ -103,7 +107,7 @@ def train_model(model, x_train, y_train):
 
 def evaluate_model(model, x_test, y_test):
     """
-    Evaluates the trained model using various metrics and logs the results.
+    Evaluates the trained model and logs the results.
 
     Args:
         model: The trained model.
@@ -115,14 +119,11 @@ def evaluate_model(model, x_test, y_test):
     """
     with mlflow.start_run():
         y_pred = model.predict(x_test)
-
         accuracy = accuracy_score(y_test, y_pred)
         report = classification_report(y_test, y_pred, output_dict=True)
         conf_matrix = confusion_matrix(y_test, y_pred)
 
-        mlflow.log_metric("mse", 0)  # Replace 0 with actual MSE if applicable
-        mlflow.log_artifact("plot", "some_plot_path")  # Replace with actual plot file
-        mlflow.sklearn.log_model(model, "model")
+        mlflow.log_metric("accuracy", accuracy)
 
         print(f"Model accuracy: {accuracy:.4f}")
 
@@ -130,7 +131,15 @@ def evaluate_model(model, x_test, y_test):
 
 
 def load_model(filename):
-    """Loads a trained model from a file."""
+    """
+    Loads a trained model from a file.
+
+    Args:
+        filename (str): Path to the model file.
+
+    Returns:
+        model: Loaded model.
+    """
     return joblib.load(filename)
 
 
@@ -149,6 +158,11 @@ def predict(model, features):
     return model.predict(features)
 
 
-def deploy(_model, _model_path):
-    """Placeholder function for deploying the model. Implementation needed."""
-    pass
+def deploy(model_path):
+    """
+    Deploys the trained model (placeholder function).
+
+    Args:
+        model_path (str): Path for deployment.
+    """
+    print(f"Deploying model to {model_path}. Implementation needed.")

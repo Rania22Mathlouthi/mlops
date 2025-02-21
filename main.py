@@ -7,7 +7,7 @@ This module provides a CLI and API interface for training, evaluating, and deplo
 # Standard library imports
 import argparse
 
-# Third party imports
+# Third-party imports
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 import mlflow
@@ -23,49 +23,54 @@ app = FastAPI()
 # MLflow configuration
 mlflow.set_tracking_uri("http://127.0.0.1:5000")
 
+
 @app.post("/predict")
 def predict(features: list):
     """Predict the target variable using the trained model.
-    
+
     Args:
-        features (list): Input features for prediction
-        
+        features (list): Input features for prediction.
+
     Returns:
-        dict: Prediction results in JSON format
+        dict: Prediction results in JSON format.
     """
-    model = load_model("path_to_your_model")
-    predictions = model.predict(features)
+    model = load_model("path_to_your_model")  # Remplace par le chemin réel du modèle
+    predictions = model.predict([features])  # Mettre entre crochets pour le bon format
     return {"predictions": predictions.tolist()}
 
+
 def main():
-    """Main entry point for the ML pipeline CLI
-    
-    Handles command line arguments for data preparation, model training,
+    """Main entry point for the ML pipeline CLI.
+
+    Handles command-line arguments for data preparation, model training,
     evaluation, and deployment.
     """
     parser = argparse.ArgumentParser(
         description="Pipeline de classification Machine Learning"
     )
     parser.add_argument(
-        "--data",
-        required=True,
-        help="Chemin vers le fichier de données CSV.",
+        "--data", required=True, help="Chemin vers le fichier de données CSV."
     )
-    parser.add_argument("--target", required=True, help="Churn")
-    parser.add_argument("--model", required=True, help="mlops.py")
+    parser.add_argument("--target", required=True, help="Nom de la colonne cible.")
+    parser.add_argument(
+        "--model", required=True, help="Chemin pour sauvegarder ou charger le modèle."
+    )
     parser.add_argument(
         "--action",
         required=True,
         choices=["train", "evaluate", "deploy"],
         help="Action à effectuer (train/evaluate/deploy)",
     )
-    parser.add_argument("--test_size", type=float, default=0.2)
+    parser.add_argument(
+        "--test_size", type=float, default=0.2, help="Taille du jeu de test."
+    )
     parser.add_argument(
         "--random_state",
         type=int,
         default=42,
-        help="Graine aléatoire pour la reproductibilité",
+        help="Graine aléatoire pour la reproductibilité.",
     )
+
     args = parser.parse_args()
 
     # Data preparation
@@ -85,11 +90,14 @@ def main():
         )
         model = train_model(model, x_train, y_train)
         print(f"Sauvegarde du modèle dans : {args.model}")
-        deploy(model, args.model)
+        deploy(args.model)
 
     elif args.action == "evaluate":
+        print(f"Chargement du modèle depuis : {args.model}")
+        model = load_model(args.model)  # Charger le modèle avant évaluation
+
         print("Évaluation du modèle...")
-        accuracy, report, _ = evaluate_model(model, x_test, y_test)  # Use _ for unused variable
+        accuracy, report, _ = evaluate_model(model, x_test, y_test)
         print(f"Précision : {accuracy * 100:.2f}%")
         print("\nRapport de classification :")
         print(report)
@@ -97,6 +105,7 @@ def main():
     elif args.action == "deploy":
         print(f"Chargement du modèle depuis : {args.model}")
         model = load_model(args.model)
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

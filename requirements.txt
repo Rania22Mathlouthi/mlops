@@ -8,3 +8,6 @@ fastapi
 uvicorn
 imbalanced-learn
 black
+mypy
+pylint
+bandit

@@ -67,32 +67,32 @@ def prepare_data(filepath, target_column, test_size=0.2, random_state=42):
     """
     data = pd.read_csv(filepath)
 
-    X, y = process_data(data, target_column)
+    x, y = process_data(data, target_column)
 
     # Split into training and test sets
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=random_state, stratify=y
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=test_size, random_state=random_state, stratify=y
     )
     # Scale features
     scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
+    x_train = scaler.fit_transform(x_train)
+    x_test = scaler.transform(x_test)
 
     # Apply SMOTE
     smote = SMOTE(random_state=42)
-    X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
+    x_train_res, y_train_res = smote.fit_resample(x_train, y_train)
 
     # Return resampled data
-    return X_train_res, X_test, y_train_res, y_test
+    return x_train_res, x_test, y_train_res, y_test
 
 
-def train_model(model, X_train, y_train):
+def train_model(model, x_train, y_train):
     """
     Trains the model and logs the parameters using MLflow.
 
     Args:
         model: The model to be trained.
-        X_train (numpy.ndarray): Training features.
+        x_train (numpy.ndarray): Training features.
         y_train (numpy.ndarray): Training target.
 
     Returns:
@@ -106,7 +106,7 @@ def train_model(model, X_train, y_train):
             mlflow.log_param("n_estimators", model.n_estimators)
 
         # Train the model
-        model.fit(X_train, y_train)
+        model.fit(x_train, y_train)
 
         # Log model's tuning parameters (from image)
         mlflow.log_param("layers", "some_value")  # Replace with actual parameter
@@ -118,20 +118,20 @@ def train_model(model, X_train, y_train):
     return model
 
 
-def evaluate_model(model, X_test, y_test):
+def evaluate_model(model, x_test, y_test):
     """
     Evaluates the trained model using various metrics and logs the results.
 
     Args:
         model: The trained model.
-        X_test (numpy.ndarray): Test features.
+        x_test (numpy.ndarray): Test features.
         y_test (numpy.ndarray): Test target.
 
     Returns:
         tuple: Accuracy, classification report, confusion matrix.
     """
     with mlflow.start_run():
-        y_pred = model.predict(X_test)
+        y_pred = model.predict(x_test)
 
         # Calculate metrics
         accuracy = accuracy_score(y_test, y_pred)

@@ -12,7 +12,11 @@ from fastapi import FastAPI
 import joblib
 import mlflow
 
+# Initialize FastAPI app
 app = FastAPI()
+
+# MLflow configuration
+mlflow.set_tracking_uri("http://127.0.0.1:5000")
 
 
 def load_data(file):
@@ -66,13 +70,16 @@ def prepare_data(filepath, target_column, test_size=0.2, random_state=42):
     data = load_data(filepath)
     x, y = process_data(data, target_column)
 
+    # Convert y to numpy array
+    y = y.values
+
     x_train, x_test, y_train, y_test = train_test_split(
         x, y, test_size=test_size, random_state=random_state, stratify=y
     )
 
     scaler = StandardScaler()
-    x_train = scaler.fit_transform(x_train)
-    x_test = scaler.transform(x_test)
+    x_train = scaler.fit_transform(x_train.values)  # Convert DataFrame to numpy array
+    x_test = scaler.transform(x_test.values)  # Convert DataFrame to numpy array
 
     smote = SMOTE(random_state=42)
     x_train_res, y_train_res = smote.fit_resample(x_train, y_train)

@@ -12,3 +12,4 @@ mypy
 pylint
 bandit
 pytest
+python-multipart

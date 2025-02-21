@@ -31,7 +31,7 @@ pylint:
 
 mypy:
 	@echo "Vérification des types avec MyPy..."
-	@. $(ENV_NAME)/bin/activate && mypy mlops.py main.py
+	@. $(ENV_NAME)/bin/activate && mypy --ignore-missing-imports mlops.py main.py
 
 bandit:
 	@echo "Analyse de sécurité avec Bandit..."

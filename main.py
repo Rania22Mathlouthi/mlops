@@ -1,42 +1,48 @@
+"""
+Machine Learning Pipeline for Classification Tasks
+
+This module provides a CLI and API interface for training, evaluating, and deploying ML models.
+"""
+
+# Standard library imports
+import argparse
+
+# Third party imports
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+import mlflow
 from fastapi import FastAPI
-import argparse  # Standard
 import uvicorn
 
+# Local application imports
+from mlops import prepare_data, train_model, evaluate_model, deploy, load_model
+
+# Initialize FastAPI app
 app = FastAPI()
 
-
-from sklearn.ensemble import AdaBoostClassifier  # Bibliothèques tierces
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-
-from mlops import (
-    prepare_data,
-    train_model,
-    evaluate_model,
-    deploy,
-    load_model,
-)  # Modules internes
-
-import mlflow
-
+# MLflow configuration
 mlflow.set_tracking_uri("http://127.0.0.1:5000")
-
-with mlflow.start_run() as run:
-    model_uri = f"runs:/{run.info.run_id}/model"
-    mlflow.register_model(model_uri, "MyModel")
-
 
 @app.post("/predict")
 def predict(features: list):
-    """Predict the target variable using the trained model."""
-    model = load_model("path_to_your_model")  # Load your model here
+    """Predict the target variable using the trained model.
+    
+    Args:
+        features (list): Input features for prediction
+        
+    Returns:
+        dict: Prediction results in JSON format
+    """
+    model = load_model("path_to_your_model")
     predictions = model.predict(features)
     return {"predictions": predictions.tolist()}
 
-
 def main():
-
-    # Configuration des arguments CLI
+    """Main entry point for the ML pipeline CLI
+    
+    Handles command line arguments for data preparation, model training,
+    evaluation, and deployment.
+    """
     parser = argparse.ArgumentParser(
         description="Pipeline de classification Machine Learning"
     )
@@ -62,7 +68,7 @@ def main():
     )
     args = parser.parse_args()
 
-    # Chargement et préparation des données
+    # Data preparation
     print("Préparation des données...")
     x_train, x_test, y_train, y_test = prepare_data(
         filepath=args.data,
@@ -72,32 +78,25 @@ def main():
     )
 
     if args.action == "train":
-        # Entraînement du modèle
         print("Entraînement du modèle...")
         model = AdaBoostClassifier(
             estimator=DecisionTreeClassifier(max_depth=1, class_weight="balanced"),
             n_estimators=50,
         )
         model = train_model(model, x_train, y_train)
-
-        # Sauvegarde du modèle
         print(f"Sauvegarde du modèle dans : {args.model}")
         deploy(model, args.model)
 
     elif args.action == "evaluate":
-        # Évaluation du modèle
         print("Évaluation du modèle...")
-        accuracy, report, conf_matrix = evaluate_model(model, x_test, y_test)
-
+        accuracy, report, _ = evaluate_model(model, x_test, y_test)  # Use _ for unused variable
         print(f"Précision : {accuracy * 100:.2f}%")
         print("\nRapport de classification :")
         print(report)
+
     elif args.action == "deploy":
-        # Chargement du modèle
         print(f"Chargement du modèle depuis : {args.model}")
         model = load_model(args.model)
 
-
 if __name__ == "__main__":
-
     uvicorn.run(app, host="0.0.0.0", port=8000)

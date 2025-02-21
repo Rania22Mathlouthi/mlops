@@ -12,14 +12,36 @@ import mlflow
 
 app = FastAPI()
 
+# Module docstring
+"""MLOps pipeline for model training, evaluation, and deployment with FastAPI."""
+
 
 def load_data(file):
+    """
+    Loads a CSV file into a pandas DataFrame.
+
+    Args:
+        file (str): Path to the CSV file.
+
+    Returns:
+        pandas.DataFrame: DataFrame containing the data.
+    """
     merged_data = pd.read_csv(file)
     return merged_data
 
 
 def process_data(data, target_column):
-    # Encode categorical variables
+    """
+    Processes the data by encoding categorical variables and separating
+    features and target variables.
+
+    Args:
+        data (pandas.DataFrame): Input data.
+        target_column (str): Name of the target column.
+
+    Returns:
+        tuple: Features and target data (X, y).
+    """
     label_encoder = LabelEncoder()
     categorical_columns = data.select_dtypes(include=["object", "category"]).columns
     for col in categorical_columns:
@@ -31,7 +53,18 @@ def process_data(data, target_column):
 
 
 def prepare_data(filepath, target_column, test_size=0.2, random_state=42):
-    """Loads, cleans, and splits the data into training and testing sets."""
+    """
+    Loads, cleans, and splits the data into training and testing sets.
+
+    Args:
+        filepath (str): Path to the dataset.
+        target_column (str): Name of the target column.
+        test_size (float, optional): Proportion of the data to be used as the test set. Default is 0.2.
+        random_state (int, optional): Random seed. Default is 42.
+
+    Returns:
+        tuple: Resampled training features, testing features, resampled training target, testing target.
+    """
     data = pd.read_csv(filepath)
 
     X, y = process_data(data, target_column)
@@ -54,6 +87,17 @@ def prepare_data(filepath, target_column, test_size=0.2, random_state=42):
 
 
 def train_model(model, X_train, y_train):
+    """
+    Trains the model and logs the parameters using MLflow.
+
+    Args:
+        model: The model to be trained.
+        X_train (numpy.ndarray): Training features.
+        y_train (numpy.ndarray): Training target.
+
+    Returns:
+        model: The trained model.
+    """
     with mlflow.start_run():
         # Log hyperparameters
         mlflow.log_param("model_type", type(model).__name__)
@@ -75,6 +119,17 @@ def train_model(model, X_train, y_train):
 
 
 def evaluate_model(model, X_test, y_test):
+    """
+    Evaluates the trained model using various metrics and logs the results.
+
+    Args:
+        model: The trained model.
+        X_test (numpy.ndarray): Test features.
+        y_test (numpy.ndarray): Test target.
+
+    Returns:
+        tuple: Accuracy, classification report, confusion matrix.
+    """
     with mlflow.start_run():
         y_pred = model.predict(X_test)
 
@@ -94,19 +149,40 @@ def evaluate_model(model, X_test, y_test):
 
 
 def load_model(filename):
-    """Loads a trained model from a file."""
+    """
+    Loads a trained model from a file.
+
+    Args:
+        filename (str): Path to the model file.
+
+    Returns:
+        model: Loaded model.
+    """
     return joblib.load(filename)
 
 
 def predict(model, features):
-    """Predict the target variable using the trained model."""
-    # Reshape features if it's a single sample (1D array)
+    """
+    Predicts the target variable using the trained model.
+
+    Args:
+        model: The trained model.
+        features (numpy.ndarray): Input features for prediction.
+
+    Returns:
+        numpy.ndarray: Predicted values.
+    """
     features = np.array(features).reshape(1, -1)  # Reshape for a single sample
     return model.predict(features)
 
 
 def deploy(model, model_path):
+    """
+    Deploys the trained model by saving it to the specified path.
 
-    # Save the model to the specified path
+    Args:
+        model: The trained model.
+        model_path (str): Path to save the model.
+    """
     joblib.dump(model, model_path)
     print(f"Model deployed and saved to: {model_path}")

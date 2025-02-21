@@ -90,7 +90,7 @@ def main():
         )
         model = train_model(model, x_train, y_train)
         print(f"Sauvegarde du modèle dans : {args.model}")
-        deploy(args.model)
+        deploy(model, "mlflow_models/my_model")
 
     elif args.action == "evaluate":
         print(f"Chargement du modèle depuis : {args.model}")

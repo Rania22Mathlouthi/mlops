@@ -165,11 +165,13 @@ def predict(model, features):
     return model.predict(features)
 
 
-def deploy(model_path):
+def deploy(model, model_path):
     """
-    Deploys the trained model (placeholder function).
+    Déploie le modèle enregistré dans MLflow.
 
     Args:
-        model_path (str): Path for deployment.
+        model: Le modèle entraîné.
+        model_path (str): Chemin où enregistrer le modèle dans MLflow.
     """
-    print(f"Deploying model to {model_path}. Implementation needed.")
+    mlflow.sklearn.save_model(model, model_path)
+    print(f"Modèle déployé dans MLflow à l'emplacement : {model_path}")

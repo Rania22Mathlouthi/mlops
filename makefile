@@ -76,7 +76,7 @@ clean-env:
 
 #10. fastapi
 run_api:
-	uvicorn app:app --reload --host 0.0.0.0 --port 8000
+	uvicorn app:app --reload --host 127.0.0.1 --port 8000
 
 # Run all steps
 all: setup quality data train test

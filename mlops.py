@@ -19,18 +19,20 @@ This script contains functions to load data, preprocess it, train and evaluate m
 and deploy them using joblib and MLflow.
 """
 
+
 def load_data(file):
     """
     Loads a CSV file into a pandas DataFrame.
 
     Args:
         file (str): Path to the CSV file.
-    
+
     Returns:
         pandas.DataFrame: DataFrame containing the data.
     """
     merged_data = pd.read_csv(file)
     return merged_data
+
 
 def process_data(data, target_column):
     """
@@ -40,7 +42,7 @@ def process_data(data, target_column):
     Args:
         data (pandas.DataFrame): Input data.
         target_column (str): Name of the target column.
-    
+
     Returns:
         tuple: Features and target data (X, y).
     """
@@ -52,6 +54,7 @@ def process_data(data, target_column):
     features = data.drop(target_column, axis=1)
     target = data[target_column]
     return features, target
+
 
 def prepare_data(filepath, target_column, test_size=0.2, random_state=42):
     """
@@ -86,6 +89,7 @@ def prepare_data(filepath, target_column, test_size=0.2, random_state=42):
     # Return resampled data
     return x_train_res, x_test, y_train_res, y_test
 
+
 def train_model(model, x_train, y_train):
     """
     Trains the model and logs the parameters using MLflow.
@@ -117,6 +121,7 @@ def train_model(model, x_train, y_train):
 
     return model
 
+
 def evaluate_model(model, x_test, y_test):
     """
     Evaluates the trained model using various metrics and logs the results.
@@ -146,6 +151,7 @@ def evaluate_model(model, x_test, y_test):
 
     return accuracy, report, conf_matrix  # Keep all three returns
 
+
 def load_model(filename):
     """
     Loads a trained model from a file.
@@ -157,6 +163,7 @@ def load_model(filename):
         model: Loaded model.
     """
     return joblib.load(filename)
+
 
 def predict(model, features):
     """
@@ -172,6 +179,7 @@ def predict(model, features):
     features = np.array(features).reshape(1, -1)  # Reshape for a single sample
     return model.predict(features)
 
+
 def deploy(model, model_path):
     """
-    Deploys the trained model by saving it to the specified path.
+    Deploys the trained model by saving it to the specified path."""

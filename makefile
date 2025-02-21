@@ -51,7 +51,7 @@ train:
 # 5. Tests unitaires
 test:
 	@echo "Execution des tests..."
-	@. $(ENV_NAME)/bin/activate && pytest mlops.py
+	@. $(ENV_NAME)/bin/activate && pytest test.py
 
 # 6. Deployment
 deploy:

@@ -56,7 +56,7 @@ test:
 # 6. Deployment
 deploy:
 	@echo "Déploiement du modèle..."
-	@. $(ENV_NAME)/bin/activate && $(PYTHON) $(MAIN_SCRIPT) --data "$(DATA_FILE)" --target $(TARGET_COLUMN) --model $(MODEL_FILE) --action deploy
+	@. $(ENV_NAME)/bin/activate && $(PYTHON) mlops.py --data "$(DATA_FILE)" --target $(TARGET_COLUMN) --model $(MODEL_FILE) --action deploy
 
 # 7. Demarrage du serveur Jupyter Notebook
 .PHONY: notebook

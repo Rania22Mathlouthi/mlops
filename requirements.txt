@@ -11,3 +11,4 @@ black
 mypy
 pylint
 bandit
+pytest

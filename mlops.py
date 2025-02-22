@@ -90,50 +90,41 @@ def prepare_data(filepath, target_column, test_size=0.2, random_state=42):
 def train_model(model, x_train, y_train):
     """
     Trains the model and logs parameters using MLflow.
-
-    Args:
-        model: The model to be trained.
-        x_train (numpy.ndarray): Training features.
-        y_train (numpy.ndarray): Training target.
-
-    Returns:
-        model: The trained model.
     """
-    with mlflow.start_run():
-        mlflow.log_param("model_type", type(model).__name__)
+    model.fit(x_train, y_train)
+    mlflow.log_param("model_type", type(model).__name__)
 
-        if hasattr(model, "n_estimators"):
-            mlflow.log_param("n_estimators", model.n_estimators)
+    if hasattr(model, "n_estimators"):
+        mlflow.log_param("n_estimators", model.n_estimators)
 
-        model.fit(x_train, y_train)
-
-        mlflow.sklearn.log_model(model, "model")
-
+    mlflow.sklearn.log_model(model, "model")
     return model
 
 
 def evaluate_model(model, x_test, y_test):
     """
     Evaluates the trained model and logs the results.
-
-    Args:
-        model: The trained model.
-        x_test (numpy.ndarray): Test features.
-        y_test (numpy.ndarray): Test target.
-
-    Returns:
-        tuple: Accuracy, classification report, confusion matrix.
     """
-    with mlflow.start_run():
-        y_pred = model.predict(x_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        report = classification_report(y_test, y_pred, output_dict=True)
-        conf_matrix = confusion_matrix(y_test, y_pred)
+    y_pred = model.predict(x_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    report = classification_report(y_test, y_pred, output_dict=True)
+    conf_matrix = confusion_matrix(y_test, y_pred)
 
-        mlflow.log_metric("accuracy", accuracy)
+    # Log metrics
+    mlflow.log_metric("accuracy", accuracy)
+    mlflow.log_metric("precision", report["weighted avg"]["precision"])
+    mlflow.log_metric("recall", report["weighted avg"]["recall"])
+    mlflow.log_metric("f1_score", report["weighted avg"]["f1-score"])
 
-        print(f"Model accuracy: {accuracy:.4f}")
+    # Log classification report and confusion matrix as artifacts
+    mlflow.log_dict(report, "classification_report.json")
+    mlflow.log_text(str(conf_matrix), "confusion_matrix.txt")
 
+    print(f"Model accuracy: {accuracy:.4f}")
+    print("\nRapport de classification :")
+    print(report)
+    print("\nMatrice de confusion :")
+    print(conf_matrix)
     return accuracy, report, conf_matrix
 
 

@@ -46,35 +46,39 @@ data:
 train:
 	@echo "Entrainement du modele..."
 	@. $(ENV_NAME)/bin/activate && $(PYTHON) mlops.py --data "$(DATA_FILE)" --target $(TARGET_COLUMN) --model $(MODEL_FILE) --action train
+
+# 5. Evaluation du modele
+evaluate:
 	@echo "Évaluation du modèle..."
-	@. $(ENV_NAME)/bin/activate && $(PYTHON) mlops.py --data $(DATA_FILE) --target $(TARGET_COLUMN) --action evaluate --model $(MODEL_FILE)
-# 5. Tests unitaires
+	@. $(ENV_NAME)/bin/activate && $(PYTHON) main.py --data "$(DATA_FILE)" --target $(TARGET_COLUMN) --model $(MODEL_FILE) --action evaluate
+
+# 6. Tests unitaires
 test:
 	@echo "Execution des tests..."
 	@. $(ENV_NAME)/bin/activate && pytest test.py
 
-# 6. Deployment
+# 7. Deployment
 deploy:
 	@echo "Déploiement du modèle..."
 	@. $(ENV_NAME)/bin/activate && $(PYTHON) mlops.py --data "$(DATA_FILE)" --target $(TARGET_COLUMN) --model $(MODEL_FILE) --action deploy
 
-# 7. Demarrage du serveur Jupyter Notebook
+# 8. Demarrage du serveur Jupyter Notebook
 .PHONY: notebook
 notebook:
 	@echo "Demarrage de Jupyter Notebook..."
 	@. $(ENV_NAME)/bin/activate && jupyter notebook
 
-# 8. Nettoyage des fichiers de modele
+# 9. Nettoyage des fichiers de modele
 clean:
 	@echo "Nettoyage des fichiers de modele..."
 	@rm -f $(MODEL_FILE)
 
-# 9. Supprimer l'environnement virtuel
+# 10. Supprimer l'environnement virtuel
 clean-env:
 	@echo "Suppression de l'environnement virtuel..."
 	@rm -rf $(ENV_NAME)
 
-#10. fastapi
+#11. fastapi
 run_api:
 	uvicorn app:app --reload --host 127.0.0.1 --port 8000
 

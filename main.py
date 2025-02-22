@@ -6,6 +6,7 @@ This module provides a CLI and API interface for training, evaluating, and deplo
 
 # Standard library imports
 import argparse
+import sys
 
 # Third-party imports
 from sklearn.ensemble import AdaBoostClassifier
@@ -34,7 +35,7 @@ def predict(features: list):
     Returns:
         dict: Prediction results in JSON format.
     """
-    model = load_model("path_to_your_model")  # Remplace par le chemin réel du modèle
+    model = load_model("model.pkl")  # Remplace par le chemin réel du modèle
     predictions = model.predict([features])  # Mettre entre crochets pour le bon format
     return {"predictions": predictions.tolist()}
 
@@ -95,7 +96,6 @@ def main():
     elif args.action == "evaluate":
         print(f"Chargement du modèle depuis : {args.model}")
         model = load_model(args.model)  # Charger le modèle avant évaluation
-
         print("Évaluation du modèle...")
         accuracy, report, _ = evaluate_model(model, x_test, y_test)
         print(f"Précision : {accuracy * 100:.2f}%")
@@ -105,7 +105,14 @@ def main():
     elif args.action == "deploy":
         print(f"Chargement du modèle depuis : {args.model}")
         model = load_model(args.model)
+        print(f"Déploiement du modèle dans : {args.model}")
+        deploy(model, args.model)  # Deploy the model using MLflow
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    # Check if the script is being run with the --action argument
+    if "--action" in sys.argv:
+        main()
+    else:
+        # Start the FastAPI app if no --action argument is provided
+        uvicorn.run(app, host="127.0.0.1", port=8000)

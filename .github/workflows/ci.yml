@@ -44,6 +44,7 @@ jobs:
           make data
           make train
           make test
+          make evaluate
 
       # Optionally, add a step to deploy or do any other necessary task
       - name: Deploy model

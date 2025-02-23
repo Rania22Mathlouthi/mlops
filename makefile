@@ -3,7 +3,7 @@ PYTHON=python3
 ENV_NAME=mlops_env
 REQUIREMENTS=requirements.txt
 MAIN_SCRIPT=main.py
-DATA_FILE=/mnt/c/Users/RANIA/Downloads/merged_data.csv
+DATA_FILE=merged_data.csv
 TARGET_COLUMN=Churn
 MODEL_FILE=model.pkl
 

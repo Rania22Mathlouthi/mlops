@@ -36,6 +36,12 @@ jobs:
           . mlops_env/bin/activate
           pip install -r requirements.txt
 
+      - name: Start MLflow server
+        run: |
+          . mlops_env/bin/activate
+          mlflow server --host 127.0.0.1 --port 5000 &
+          sleep 5  
+
       - name: Run Makefile commands
         run: |
           . mlops_env/bin/activate

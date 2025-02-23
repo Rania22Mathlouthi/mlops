@@ -45,7 +45,7 @@ data:
 # 4. Entrainement du modele
 train:
 	@echo "Entrainement du modele..."
-	@. $(ENV_NAME)/bin/activate && $(PYTHON) mlops.py --data "$(DATA_FILE)" --target $(TARGET_COLUMN) --model $(MODEL_FILE) --action train
+	@. $(ENV_NAME)/bin/activate && $(PYTHON) main.py --data "$(DATA_FILE)" --target $(TARGET_COLUMN) --model $(MODEL_FILE) --action train
 
 # 5. Evaluation du modele
 evaluate:
@@ -60,7 +60,7 @@ test:
 # 7. Deployment
 deploy:
 	@echo "Déploiement du modèle..."
-	@. $(ENV_NAME)/bin/activate && $(PYTHON) mlops.py --data "$(DATA_FILE)" --target $(TARGET_COLUMN) --model $(MODEL_FILE) --action deploy
+	@. $(ENV_NAME)/bin/activate && $(PYTHON) main.py --data "$(DATA_FILE)" --target $(TARGET_COLUMN) --model $(MODEL_FILE) --action deploy
 
 # 8. Demarrage du serveur Jupyter Notebook
 .PHONY: notebook
@@ -83,6 +83,6 @@ run_api:
 	uvicorn app:app --reload --host 127.0.0.1 --port 8000
 
 # Run all steps
-all: setup quality data train test
+all: setup quality data train evaluate test deploy
 
 .PHONY: setup quality black pylint mypy bandit data train test deploy clean clean-env notebook

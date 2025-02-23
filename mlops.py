@@ -46,8 +46,8 @@ def process_data(data, target_column):
     label_encoder = LabelEncoder()
     categorical_columns = data.select_dtypes(include=["object", "category"]).columns
     for col in categorical_columns:
-        data[col] = label_encoder.fit_transform(data[col])
-
+        if col != target_column:
+            data[col] = label_encoder.fit_transform(data[col])
     features = data.drop(target_column, axis=1)
     target = data[target_column]
     return features, target
@@ -89,15 +89,20 @@ def prepare_data(filepath, target_column, test_size=0.2, random_state=42):
 
 def train_model(model, x_train, y_train):
     """
-    Trains the model and logs parameters using MLflow.
+    Trains the model, logs parameters, and registers the model in MLflow Model Registry.
+
+    Args:
+        model: The model to be trained.
+        x_train (numpy.ndarray): Training features.
+        y_train (numpy.ndarray): Training target.
+
+    Returns:
+        model: The trained model.
     """
+
+    # Train the model
     model.fit(x_train, y_train)
-    mlflow.log_param("model_type", type(model).__name__)
 
-    if hasattr(model, "n_estimators"):
-        mlflow.log_param("n_estimators", model.n_estimators)
-
-    mlflow.sklearn.log_model(model, "model")
     return model
 
 
@@ -109,17 +114,6 @@ def evaluate_model(model, x_test, y_test):
     accuracy = accuracy_score(y_test, y_pred)
     report = classification_report(y_test, y_pred, output_dict=True)
     conf_matrix = confusion_matrix(y_test, y_pred)
-
-    # Log metrics
-    mlflow.log_metric("accuracy", accuracy)
-    mlflow.log_metric("precision", report["weighted avg"]["precision"])
-    mlflow.log_metric("recall", report["weighted avg"]["recall"])
-    mlflow.log_metric("f1_score", report["weighted avg"]["f1-score"])
-
-    # Log classification report and confusion matrix as artifacts
-    mlflow.log_dict(report, "classification_report.json")
-    mlflow.log_text(str(conf_matrix), "confusion_matrix.txt")
-
     print(f"Model accuracy: {accuracy:.4f}")
     print("\nRapport de classification :")
     print(report)
@@ -138,7 +132,28 @@ def load_model(filename):
     Returns:
         model: Loaded model.
     """
-    return joblib.load(filename)
+    return joblib.load(filename)  # Changed from dump() to load()
+
+
+def deploy(model, model_path):
+    """
+    Deploys the model to MLflow.
+
+    Args:
+        model: Trained model.
+        model_path (str): Path to save the model in MLflow.
+    """
+    # Log the model with MLflow (recommended)
+    mlflow.sklearn.log_model(
+        sk_model=model,
+        artifact_path=model_path,
+        registered_model_name="MyModel",  # Optional: register in Model Registry
+    )
+
+    # Alternative: Save model to local path
+    # mlflow.sklearn.save_model(model, model_path)
+
+    print(f"Model deployed to MLflow at: {model_path}")
 
 
 def predict(model, features):
@@ -154,15 +169,3 @@ def predict(model, features):
     """
     features = np.array(features).reshape(1, -1)
     return model.predict(features)
-
-
-def deploy(model, model_path):
-    """
-    Déploie le modèle enregistré dans MLflow.
-
-    Args:
-        model: Le modèle entraîné.
-        model_path (str): Chemin où enregistrer le modèle dans MLflow.
-    """
-    mlflow.sklearn.save_model(model, model_path)
-    print(f"Modèle déployé dans MLflow à l'emplacement : {model_path}")

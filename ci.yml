@@ -1,0 +1,49 @@
+name: CI Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Set up dependencies
+        run: |
+          python -m venv mlops_env
+          . mlops_env/bin/activate
+          pip install -r requirements.txt
+
+      - name: Start MLflow server
+        run: |
+          . mlops_env/bin/activate
+          mlflow server --host 127.0.0.1 --port 5000 &
+          sleep 5  # Wait for the server to start
+
+      - name: Run Makefile commands
+        run: |
+          . mlops_env/bin/activate
+          make setup
+          make quality
+          make data
+          make train
+          make test
+
+      # Optionally, add a step to deploy or do any other necessary task
+      - name: Deploy model
+        run: |
+          . mlops_env/bin/activate
+          make deploy
